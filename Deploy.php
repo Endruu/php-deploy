@@ -1,1 +1,0 @@
-<?phpclass Deploy {	public function preClientScript() {}	public function postClientScript() {}	public function preServerScript() {}	public function postServerScript() {}		}

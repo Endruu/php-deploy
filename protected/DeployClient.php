@@ -1,15 +1,14 @@
 <?php
 
-class Client /*extends Deploy*/ {
+require 'DeployBase.php';
+
+class DeployClient extends DeployBase {
 
 	public $projectPath = '';
 
 	protected $directories	= array();
 	protected $files		= array();
 
-	public function preDeployScript() {}
-	public function postDeployScript() {}
-	
 	public function readDir( $dir = '.' ) {
 		$scan = array_diff(scandir($dir), array('..', '.'));
 		

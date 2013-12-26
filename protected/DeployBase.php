@@ -1,0 +1,1 @@
+<?phpclass DeployBase {	public function preDeployScript() {}	public function postDeployScript() {}}
