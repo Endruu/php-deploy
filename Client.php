@@ -2,7 +2,7 @@
 
 class Client /*extends Deploy*/ {
 
-	public $projectPath = '.';
+	public $projectPath = '';
 
 	protected $directories	= array();
 	protected $files		= array();
@@ -32,48 +32,57 @@ class Client /*extends Deploy*/ {
 	}
 	
 	public function writeDir() {
-		$out = array('files', 'directories');
-		$chop = strlen($this->projectPath) + 1;
+		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		
-		foreach( $out as $o ) {
-			$file = fopen( $o.'.txt', 'w');
-			foreach( $this->$o as $f ) {
-				fwrite($file, substr($f, $chop) . "\n");
-			}
-			fclose($file);
+		$file = fopen('files.txt', 'w');
+		foreach( $this->files as $f ) {
+			fwrite($file, md5_file($f) .' '. substr($f, $chop) . "\n");
 		}
+		fclose($file);
+		
+		$file = fopen('directories.txt', 'w');
+		foreach( $this->directories as $d ) {
+			fwrite($file, substr($d, $chop) . "\n");
+		}
+		fclose($file);
+
 	}
 	
 	public function excludeDir( $dir ) {
-		$chop = strlen($this->projectPath) + 1;
+		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		$newdirs	= array();
+		$newfiles	= array();
 		
 		foreach( $this->directories as $d ) {
 			$ret = preg_match($dir, substr($d, $chop));
 			if( $ret === 0 ) {
-			
 				$newdirs[] = $d;
-				
-				$newfiles	= array();
-				foreach( $this->files as $f ) {
-					echo "$f - $d\n";
-					if( strpos($f, $d) === false ) {	// if dir is not found in files name
-						$newfiles[] = $f;				// keep it
-					}
-				}
-				$this->files = $newfiles;
-				
 			} else if( $ret === false ) {
 				//hiba
 			}
 		}
+		foreach( $this->files as $f ) {
+			$ret = preg_match("/(.*)[\/][^\/]*$/", substr($f, $chop), $m);
+			if( $ret ) {
+				$ret = preg_match($dir, $m[1]);
+				if( $ret === 0 ) {
+					$newfiles[] = $f;
+				} else if( $ret === false ) {
+					//hiba
+				}
+			} else if( $ret === false ) {
+				//hiba
+			}
+			
+		}
 		
+		$this->files = $newfiles;
 		$this->directories = $newdirs;
 	}
 	
 	private function zipFiles( $name = 'deploy.zip', $path = '' ) {
 		$zip = new ZipArchive;
-		$chop = strlen($this->projectPath) + 1;
+		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		
 		$ret = $zip->open($path.$name, ZipArchive::EXCL );
 		if( $ret === true ) {
@@ -92,7 +101,7 @@ class Client /*extends Deploy*/ {
 	}
 	
 	public function deploy() {
-		$this->readDir($this->projectPath);
+		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
 		$this->preDeployScript();
 		$this->writeDir();
 		
