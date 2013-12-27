@@ -23,7 +23,6 @@ class DeployClient extends DeployBase {
 	
 	private function zipFiles( $name = 'deploy.zip', $path = '' ) {
 		$zip = new ZipArchive;
-		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		
 		$ret = $zip->open($path.$name, ZipArchive::CREATE);
 		if( $ret !== true ) {
@@ -31,7 +30,7 @@ class DeployClient extends DeployBase {
 		}
 		
 		foreach( $this->files as $f ) {
-			if( !$zip->addFile($f, 'src/'.substr($f,$chop)) ) {
+			if( !$zip->addFile($this->projectPath.'/'.$f, 'src/'.$f) ) {
 				throw new Exception("Can't add file to archive!\nArchive: $path$name\nFile:    $f");
 			}
 		}

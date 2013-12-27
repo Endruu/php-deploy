@@ -14,7 +14,6 @@ class DeployServer extends DeployBase {
 	
 	private function unzipFiles( $name = 'deploy.zip', $path = '' ) {
 		$zip = new ZipArchive;
-		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		
 		$ret = $zip->open($path.$name, ZipArchive::CHECKCONS);
 		if( $ret !== true ) {
