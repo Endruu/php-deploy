@@ -5,6 +5,8 @@ require 'DeployBase.php';
 class DeployClient extends DeployBase {
 
 	public $projectPath = '';
+	
+	protected $workDir = '';
 
 	protected $directories	= array();
 	protected $files		= array();
@@ -30,13 +32,13 @@ class DeployClient extends DeployBase {
 		}
 	}
 	
-	public function writeDir() {
+	public function writeDir( $path = '' ) {
 		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		
 		sort($this->files);
-		$file = fopen('files.txt', 'w');
+		$file = fopen($path.'files.txt', 'w');
 		if( !$file ) {
-			throw new Exception("Failed to open file: files.txt for writing!");
+			throw new Exception("Failed to open file: $path"."files.txt for writing!");
 		}
 		foreach( $this->files as $f ) {
 			fwrite($file, substr($f, $chop) . "\n");
@@ -44,9 +46,9 @@ class DeployClient extends DeployBase {
 		fclose($file);
 		
 		sort($this->directories);
-		$file = fopen('directories.txt', 'w');
+		$file = fopen($path.'directories.txt', 'w');
 		if( !$file ) {
-			throw new Exception("Failed to open directories: files.txt for writing!");
+			throw new Exception("Failed to open file: $path"."directories.txt for writing!");
 		}
 		foreach( $this->directories as $d ) {
 			fwrite($file, substr($d, $chop) . "\n");
@@ -153,6 +155,19 @@ class DeployClient extends DeployBase {
 		$this->directories = array_unique( $this->directories );
 	}
 	
+	private function createWorkingDirectory() {
+		$dir = 'protected/work/' . date("ymd");
+		if( file_exists($dir) ) {
+			throw new Exception("Working directory already exists!");
+		}
+		
+		if( !mkdir($dir, 0777, true) ) {
+			throw new Exception("Failed to create working directory!");
+		}
+
+		$this->workDir = $dir . '/';
+	}
+	
 	private function zipFiles( $name = 'deploy.zip', $path = '' ) {
 		$zip = new ZipArchive;
 		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
@@ -168,10 +183,10 @@ class DeployClient extends DeployBase {
 			throw new Exception("Can't create archive: $path$name! Zip error code: $ret");
 		}
 		
-		if( !$zip->addFile('files.txt') ) {
+		if( !$zip->addFile($path.'files.txt') ) {
 			throw new Exception("Can't add file: files.txt to archive!");
 		}
-		if( !$zip->addFile('directories.txt') ) {
+		if( !$zip->addFile($path.'directories.txt') ) {
 			throw new Exception("Can't add file: directories.txt to archive!");
 		}
 		
@@ -182,12 +197,11 @@ class DeployClient extends DeployBase {
 	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
+		$this->createWorkingDirectory();
+		
 		$this->preDeployScript();
-		$this->writeDir();
-		
-		
-		$this->zipFiles();
-		
+		$this->writeDir($this->workDir);
+		$this->zipFiles('deploy.zip', $this->workDir);
 		$this->postDeployScript();
 	}
 }
