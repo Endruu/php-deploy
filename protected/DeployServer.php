@@ -6,7 +6,7 @@ class DeployServer extends DeployBase {
 
 	protected $newFiles = array();
 	protected $oldFiles = array();
-	protected $owFiles = array();		// files to be overwritten
+	protected $existingFiles = array();
 	protected $newDirectories = array();
 	protected $oldDirectories = array();
 	
@@ -36,21 +36,40 @@ class DeployServer extends DeployBase {
 		
 		$this->newFiles = array_diff($files, $this->files);
 		$this->oldFiles = array_diff($this->files, $files);
-		$this->owFiles = array_diff($this->files, $files);
+		$this->existingFiles = array_intersect($this->files, $files);
 		
-		$this->newDirectories = array_diff($files, $this->files);
-		$this->oldDirectories = array_diff($this->files, $files);
+		$this->newDirectories = array_diff($dirs, $this->directories);
+		$this->oldDirectories = array_diff($this->directories, $dirs);
 	}
 	
 	protected function writeDiff() {
-		$file = fopen($path.'difference.txt', 'w');
+		$file = fopen($this->workDir.'difference.txt', 'w');
 		if( !$file ) {
 			throw new Exception("Failed to open file: $path"."difference.txt for writing!");
 		}
 		
-		foreach( $this->newFiles as $d ) {
-			fwrite($file, substr($d, $chop) . "\n");
+		fwrite($file, "--- NEW FILES -------------------\n\n");
+		foreach( $this->newFiles as $f ) {
+			fwrite($file, $f . "\n");
 		}
+		fwrite($file, "\n\n--- OLD FILES -------------------\n\n");
+		foreach( $this->oldFiles as $f ) {
+			fwrite($file, $f . "\n");
+		}
+		fwrite($file, "\n\n--- EXISTING FILES --------------\n\n");
+		foreach( $this->existingFiles as $f ) {
+			fwrite($file, $f . "\n");
+		}
+		fwrite($file, "\n\n--- NEW DIRECTORIES -------------\n\n");
+		foreach( $this->newDirectories as $f ) {
+			fwrite($file, $f . "\n");
+		}
+		fwrite($file, "\n\n--- OLD DIRECTORIES -------------\n\n");
+		foreach( $this->oldDirectories as $f ) {
+			fwrite($file, $f . "\n");
+		}
+		
+		fclose($file);
 	}
 	
 	private function getDeployFile( $file = 'deploy.zip', $from = null ) {
@@ -87,8 +106,12 @@ class DeployServer extends DeployBase {
 		$this->createWorkingDirectory();
 		$this->getDeployFile('deploy.zip', 'protected/work');
 		
-		$this->preDeployScript();
 		$this->unzipFiles('deploy.zip', $this->workDir);
+		$this->diffDir();
+		$this->preDeployScript();
+		$this->writeDiff();
+		
+		
 		$this->postDeployScript();
 		$this->closeLog();
 	}
