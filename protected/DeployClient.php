@@ -3,34 +3,6 @@
 require 'DeployBase.php';
 
 class DeployClient extends DeployBase {
-
-	public $projectPath = '';
-	
-	protected $workDir = '';
-
-	protected $directories	= array();
-	protected $files		= array();
-
-	public function readDir( $dir = '.' ) {
-		$scan = array_diff(scandir($dir), array('..', '.'));
-		
-		if( $dir === '.' ) {
-			$dir = '';
-		} else {
-			$dir .= '/';
-		}
-		
-		foreach( $scan as $s ) {
-			$path = $dir . $s;
-			if( is_file($path) ) {
-				$this->files[] = $path;
-			} else {
-				$this->directories[] = $path;
-				$subdir_found = true;
-				$this->readDir($path);
-			}
-		}
-	}
 	
 	public function writeDir( $path = '' ) {
 		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
@@ -153,19 +125,6 @@ class DeployClient extends DeployBase {
 		}
 		$this->directories[] = $dir;
 		$this->directories = array_unique( $this->directories );
-	}
-	
-	private function createWorkingDirectory() {
-		$dir = 'protected/work/' . date("ymd");
-		if( file_exists($dir) ) {
-			throw new Exception("Working directory already exists!");
-		}
-		
-		if( !mkdir($dir, 0777, true) ) {
-			throw new Exception("Failed to create working directory!");
-		}
-
-		$this->workDir = $dir . '/';
 	}
 	
 	private function zipFiles( $name = 'deploy.zip', $path = '' ) {
