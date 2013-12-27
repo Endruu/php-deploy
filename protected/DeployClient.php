@@ -4,128 +4,22 @@ require 'DeployBase.php';
 
 class DeployClient extends DeployBase {
 	
-	public function writeDir( $path = '' ) {
-		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
-		
-		sort($this->files);
-		$file = fopen($path.'files.txt', 'w');
-		if( !$file ) {
-			throw new Exception("Failed to open file: $path"."files.txt for writing!");
-		}
-		foreach( $this->files as $f ) {
-			fwrite($file, substr($f, $chop) . "\n");
-		}
-		fclose($file);
-		
-		sort($this->directories);
-		$file = fopen($path.'directories.txt', 'w');
-		if( !$file ) {
-			throw new Exception("Failed to open file: $path"."directories.txt for writing!");
-		}
-		foreach( $this->directories as $d ) {
-			fwrite($file, substr($d, $chop) . "\n");
-		}
-		fclose($file);
-
-	}
-	
 	public function excludeFile( $file, $withPath = false ) {
-		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
-		$newfiles	= array();
-		
-		foreach( $this->files as $f ) {
-			if( $withPath ) {
-				$ret = preg_match($file, substr($f, $chop));
-				if( $ret === 0 ) {
-					$newfiles[] = $f;
-				} else if( $ret === false ) {
-					throw new Exception("Failed to parse filename for excluding file! (1)");
-				}
-			} else {
-				$ret = preg_match("/.*[\/]([^\/]*)$/", substr($f, $chop), $m);
-				if( $ret ) {
-					$ret = preg_match($file, $m[1]);
-					if( $ret === 0 ) {
-						$newfiles[] = $f;
-					} else if( $ret === false ) {
-						throw new Exception("Failed to parse filename for excluding file! (2)");
-					}
-				} else if( $ret === false ) {
-					throw new Exception("Failed to parse filename to get dirname for excluding file!");
-				} else {
-					$ret = preg_match($file, substr($f, $chop));
-					if( $ret === 0 ) {
-						$newfiles[] = $f;
-					} else if( $ret === false ) {
-						throw new Exception("Failed to parse filename for excluding file! (3)");
-					}
-				}
-			}
-		}
-		
-		$this->files = $newfiles;
+		$this->removeFile( $file, $withPath );
 	}
 	
 	public function includeFile( $file ) {
-		if( $this->projectPath ) {
-			$file = $this->projectPath .'/'. $file;
-		}
-		
-		if( !file_exists($file) ) {
-			throw new Exception("Failed to include file: $file (not found)");
-		}
-		
-		$ret = preg_match("/(.*)[\/][^\/]*$/", $file, $m);
-		if( $ret ) {
-			$this->includeDir($m[1], false);
-		} else if( $ret === false ) {
-			throw new Exception("Failed to parse filename $file for including!");
-		}
-		$this->files[] = $file;
-		$this->files = array_unique( $this->files );
+		$this->addFile( $file );
 	}
 	
 	public function excludeDir( $dir ) {
-		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
-		$newdirs	= array();
-		$newfiles	= array();
-		
-		foreach( $this->directories as $d ) {
-			$ret = preg_match($dir, substr($d, $chop));
-			if( $ret === 0 ) {
-				$newdirs[] = $d;
-			} else if( $ret === false ) {
-				throw new Exception("Failed to parse dirname for excluding directory!");
-			}
-		}
-		foreach( $this->files as $f ) {
-			$ret = preg_match("/(.*)[\/][^\/]*$/", substr($f, $chop), $m);
-			if( $ret ) {
-				$ret = preg_match($dir, $m[1]);
-				if( $ret === 0 ) {
-					$newfiles[] = $f;
-				} else if( $ret === false ) {
-					throw new Exception("Failed to parse filename for excluding directory!");
-				}
-			} else if( $ret === false ) {
-				throw new Exception("Failed to parse filename to get dirname for excluding directory!");
-			} else {
-				$newfiles[] = $f;
-			}
-			
-		}
-		
-		$this->files = $newfiles;
-		$this->directories = $newdirs;
+		$this->removeDir( $dir );
 	}
 	
 	public function includeDir( $dir, $prefix = true ) {
-		if( $prefix && $this->projectPath ) {
-			$dir = $this->projectPath .'/'. $dir;
-		}
-		$this->directories[] = $dir;
-		$this->directories = array_unique( $this->directories );
+		$this->addDir( $dir, $prefix );
 	}
+	
 	
 	private function zipFiles( $name = 'deploy.zip', $path = '' ) {
 		$zip = new ZipArchive;
@@ -153,6 +47,7 @@ class DeployClient extends DeployBase {
 			throw new Exception("Can't close archive!");
 		}
 	}
+	
 	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
