@@ -1,6 +1,6 @@
 <?php
 
-require 'DeployBase.php';
+require_once 'DeployBase.php';
 
 class DeployClient extends DeployBase {
 	
@@ -26,20 +26,20 @@ class DeployClient extends DeployBase {
 		$chop = $this->projectPath ? strlen($this->projectPath) + 1 : 0;
 		
 		$ret = $zip->open($path.$name, ZipArchive::CREATE);
-		if( $ret === true ) {
-			foreach( $this->files as $f ) {
-				if( !$zip->addFile($f, 'src/'.substr($f,$chop)) ) {
-					throw new Exception("Can't add file to archive!\nArchive: $path$name\nFile:    $f");
-				}
-			}
-		} else {
+		if( $ret !== true ) {
 			throw new Exception("Can't create archive: $path$name! Zip error code: $ret");
 		}
 		
-		if( !$zip->addFile($path.'files.txt') ) {
+		foreach( $this->files as $f ) {
+			if( !$zip->addFile($f, 'src/'.substr($f,$chop)) ) {
+				throw new Exception("Can't add file to archive!\nArchive: $path$name\nFile:    $f");
+			}
+		}
+			
+		if( !$zip->addFile($path.'files.txt', 'files.txt') ) {
 			throw new Exception("Can't add file: files.txt to archive!");
 		}
-		if( !$zip->addFile($path.'directories.txt') ) {
+		if( !$zip->addFile($path.'directories.txt', 'directories.txt') ) {
 			throw new Exception("Can't add file: directories.txt to archive!");
 		}
 		
