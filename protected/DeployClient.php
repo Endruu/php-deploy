@@ -23,24 +23,7 @@ class DeployClient extends DeployBase {
 	
 	private function zipFiles( $name = 'deploy.zip') {
 		$zip = new ZipArchive;
-		
-		// --- Zip source ---
-		$ret = $zip->open($this->workDir.'src.zip', ZipArchive::CREATE);
-		if( $ret !== true ) {
-			throw new Exception("Can't create archive: src.zip! Zip error code: $ret");
-		}
-		
-		foreach( $this->files as $f ) {
-			if( !$zip->addFile($this->projectPath.'/'.$f, $f) ) {
-				throw new Exception("Can't add file $f to archive!");
-			}
-		}
-		
-		if( !$zip->close() ) {
-			throw new Exception("Can't close archive!");
-		}
-		
-		// --- Zip deploy ---
+
 		$ret = $zip->open($this->workDir.$name, ZipArchive::CREATE);
 		if( $ret !== true ) {
 			throw new Exception("Can't create archive: $name! Zip error code: $ret");
@@ -61,6 +44,24 @@ class DeployClient extends DeployBase {
 		}
 	}
 	
+	private function zipSrc() {
+		$zip = new ZipArchive;
+		
+		$ret = $zip->open($this->workDir.'src.zip', ZipArchive::CREATE);
+		if( $ret !== true ) {
+			throw new Exception("Can't create archive: src.zip! Zip error code: $ret");
+		}
+		
+		foreach( $this->files as $f ) {
+			if( !$zip->addFile($this->projectPath.'/'.$f, $f) ) {
+				throw new Exception("Can't add file $f to archive!");
+			}
+		}
+		
+		if( !$zip->close() ) {
+			throw new Exception("Can't close archive!");
+		}
+	}
 	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
@@ -68,7 +69,8 @@ class DeployClient extends DeployBase {
 		
 		$this->preDeployScript();
 		$this->writeDir($this->workDir);
-		$this->zipFiles('deploy.zip', $this->workDir);
+		$this->zipSrc();
+		$this->zipFiles();
 		$this->postDeployScript();
 	}
 }
