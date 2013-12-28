@@ -21,12 +21,15 @@ class DeployServer extends DeployBase {
 		}
 		
 		if( !$zip->extractTo($this->workDir, 'files.txt') ) {
+			throw new Exception("Failed to extract files.txt!");
 		}
 		
 		if( !$zip->extractTo($this->workDir, 'directories.txt') ) {
+			throw new Exception("Failed to extract directories.txt!");
 		}
 		
 		if( !$zip->extractTo($this->workDir, 'src.zip') ) {
+			throw new Exception("Failed to extract src.zip!");
 		}
 		
 		if( !$zip->close() ) {
@@ -43,6 +46,7 @@ class DeployServer extends DeployBase {
 		}
 		
 		if( !$zip->extractTo($this->projectPath) ) {
+			throw new Exception("Failed to extract src.zip to project!");
 		}
 		
 		if( !$zip->close() ) {
@@ -65,7 +69,7 @@ class DeployServer extends DeployBase {
 	protected function writeDiff() {
 		$file = fopen($this->workDir.'difference.txt', 'w');
 		if( !$file ) {
-			throw new Exception("Failed to open file: $path"."difference.txt for writing!");
+			throw new Exception("Failed to open file: difference.txt for writing!");
 		}
 		
 		fwrite($file, "--- NEW FILES -------------------\n\n");
