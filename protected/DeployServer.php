@@ -96,12 +96,22 @@ class DeployServer extends DeployBase {
 		fclose($file);
 	}
 	
+	private function createNewDirectories() {
+		foreach( $this->newDirectories as $d ) {
+			if( !( file_exists($d) && is_dir($d) ) ) {
+				if( !mkdir($this->projectPath.'/'.$d, 0777, true) ) {
+					throw new Exception("Can't create directory: $d");
+				}
+			}
+		}
+	}
+	
 	private function getDeployFile( $file = 'deploy.zip', $from = null ) {
 		if( $from === null ) {
 			// upload
 		} else {
 			if( !copy($from.'/'.$file, $this->workDir.$file) ) {
-				throw new Exception("Can't copy deploy file from: $from to: " . $this->workDir . " (file: $file)\n");
+				throw new Exception("Can't copy deploy file from: $from to: " . $this->workDir . " (file: $file)");
 			}
 		}
 	}
@@ -136,6 +146,7 @@ class DeployServer extends DeployBase {
 		$this->writeDiff();
 		
 		$this->unzipSrc();
+		$this->createNewDirectories();
 		
 		$this->postDeployScript();
 		$this->closeLog();
