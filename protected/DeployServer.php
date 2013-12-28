@@ -12,21 +12,41 @@ class DeployServer extends DeployBase {
 	
 	private $logFile = null;
 	
-	private function unzipFiles( $name = 'deploy.zip', $path = '' ) {
+	private function unzipFiles( $name = 'deploy.zip' ) {
 		$zip = new ZipArchive;
 		
-		$ret = $zip->open($path.$name, ZipArchive::CHECKCONS);
+		$ret = $zip->open($this->workDir.$name, ZipArchive::CHECKCONS);
 		if( $ret !== true ) {
-			throw new Exception("Can't open archive: $path$name! Zip error code: $ret");
+			throw new Exception("Can't open archive: $name! Zip error code: $ret");
 		}
 		
-		if( !$zip->extractTo($path, 'files.txt') ) {
+		if( !$zip->extractTo($this->workDir, 'files.txt') ) {
 		}
 		
-		if( !$zip->extractTo($path, 'directories.txt') ) {
+		if( !$zip->extractTo($this->workDir, 'directories.txt') ) {
 		}
 		
-		if( !$zip->extractTo($path, 'src') ) {
+		if( !$zip->extractTo($this->workDir, 'src.zip') ) {
+		}
+		
+		if( !$zip->close() ) {
+			throw new Exception("Can't close archive!");
+		}
+	}
+	
+	private function unzipSrc() {
+		$zip = new ZipArchive;
+		
+		$ret = $zip->open($this->workDir.'src.zip', ZipArchive::CHECKCONS);
+		if( $ret !== true ) {
+			throw new Exception("Can't open archive: src.zip! Zip error code: $ret");
+		}
+		
+		if( !$zip->extractTo($this->projectPath) ) {
+		}
+		
+		if( !$zip->close() ) {
+			throw new Exception("Can't close archive!");
 		}
 	}
 	
@@ -106,11 +126,12 @@ class DeployServer extends DeployBase {
 		$this->createWorkingDirectory();
 		$this->getDeployFile('deploy.zip', 'protected/work');
 		
-		$this->unzipFiles('deploy.zip', $this->workDir);
+		$this->unzipFiles();
 		$this->diffDir();
 		$this->preDeployScript();
 		$this->writeDiff();
 		
+		$this->unzipSrc();
 		
 		$this->postDeployScript();
 		$this->closeLog();
