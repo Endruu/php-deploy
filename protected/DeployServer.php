@@ -12,6 +12,22 @@ class DeployServer extends DeployBase {
 	
 	private $logFile = null;
 	
+	public function keepFile( $file, $withPath = false ) {
+		$this->removeFile( $file, $withPath );
+	}
+	
+	public function obsoleteFile( $file ) {
+		$this->addFile( $file );
+	}
+	
+	public function keepDir( $dir ) {
+		$this->removeDir( $dir );
+	}
+	
+	public function obsolateDir( $dir, $prefix = true ) {
+		$this->addDir( $dir, $prefix );
+	}
+	
 	private function unzipFiles( $name = 'deploy.zip' ) {
 		$zip = new ZipArchive;
 		
