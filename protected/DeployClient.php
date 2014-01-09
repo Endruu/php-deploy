@@ -3,6 +3,8 @@
 require_once 'DeployBase.php';
 
 class DeployClient extends DeployBase {
+
+	public $incZip	= false;
 	
 	public function excludeFile( $file, $withPath = false ) {
 		$this->removeFile( $file, $withPath );
@@ -40,12 +42,13 @@ class DeployClient extends DeployBase {
 		}
 		
 		if( !$zip->close() ) {
-			throw new Exception("Can't close archive!");
+			throw new Exception("Can't close archive: $name!");
 		}
 	}
 	
 	private function zipSrc() {
 		$zip = new ZipArchive;
+		$path = $this->projectPath ? $this->projectPath.'/' : '';
 		
 		$ret = $zip->open($this->workDir.'src.zip', ZipArchive::CREATE);
 		if( $ret !== true ) {
@@ -53,13 +56,25 @@ class DeployClient extends DeployBase {
 		}
 		
 		foreach( $this->files as $f ) {
-			if( !$zip->addFile($this->projectPath.'/'.$f, $f) ) {
+			
+			if( !$zip->addFile($path.$f, $f) ) {
 				throw new Exception("Can't add file $f to archive!");
 			}
+			
+			if( $this->incZip ) {
+				if( !$zip->close() ) {
+					throw new Exception("Can't close archive: src.zip @ $f!");
+				}
+				$ret = $zip->open($this->workDir.'src.zip');
+				if( $ret !== true ) {
+					throw new Exception("Can't reopen archive: src.zip! Zip error code: $ret");
+				}
+			}
+			
 		}
 		
 		if( !$zip->close() ) {
-			throw new Exception("Can't close archive!");
+			throw new Exception("Can't close archive: src.zip!");
 		}
 	}
 	
