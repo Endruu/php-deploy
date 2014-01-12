@@ -25,9 +25,10 @@ class Deploy {
 		
 		$wd = $base->setWorkPath($workDir);			// create working directory
 		$opt = $this->getOptions($ini);				// read options
-		Ini::writeIni($wd.'deploy.ini', array('server' => $opt['server']));
 		
-		require_once($opt['client']['script']);		// include deploying script
+		if( $opt['client']['script'] ) {
+			require_once($opt['client']['script']);	// include deploying script
+		}
 		$deployer = new $opt['client']['class'];	// create the deploying class
 		$deployer->init($base, $opt);				// initialize deploying class
 		
@@ -44,7 +45,9 @@ class Deploy {
 		$base->unzipFiles($zip);					// unzip the deploying files
 		$opt = $this->getOptions($wd.'deploy.ini');	// read options
 		
-		require_once($opt['server']['script']);		// include deploying script
+		if( $opt['server']['script'] ) {
+			require_once($opt['server']['script']);	// include deploying script
+		}
 		$deployer = new $opt['server']['class'];	// create the deploying class
 		$deployer->init($base, $opt);				// initialize deploying class
 		
