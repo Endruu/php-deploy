@@ -4,7 +4,21 @@ require_once 'DeployBase.php';
 
 class DeployClient extends DeployBase {
 
-	public $incZip	= false;
+	public	$incZip		= false;
+	private	$serverOpts	= array();
+	
+	public function init($base, $opt) {
+		$this->initClient($base, $opt);
+	}
+	
+	protected function initClient($base, $opt) {
+		$this->initBase($base);
+		$this->setProjectPath($opt['client']['path']);
+		if(isset($opt['client']['incZip']))
+			$this->incZip = $opt['client']['incZip'];
+		if(isset($opt['server']))
+			$this->serverOpts = $opt['server'];
+	}
 	
 	public function excludeFile( $file, $withPath = false ) {
 		$this->removeFile( $file, $withPath );

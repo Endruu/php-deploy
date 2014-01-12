@@ -12,6 +12,15 @@ class DeployServer extends DeployBase {
 	
 	private $logFile = null;
 	
+	public function init($base, $opt) {
+		$this->initServer($base, $opt);
+	}
+	
+	protected function initServer($base, $opt) {
+		$this->initBase($base);
+		$this->setProjectPath($opt['server']['path']);
+	}
+	
 	public function keepFile( $file, $withPath = false ) {
 		$this->removeFile( $file, $withPath );
 	}
