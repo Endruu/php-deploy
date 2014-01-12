@@ -5,7 +5,7 @@ require_once 'DeployServer.php';
 
 class Deploy {
 
-	protected function initByIni( $iniPath ) {
+	private function getOptions( $iniPath ) {
 		$optOuter = parse_ini_file($iniPath, true);
 		if( $optOuter === false ) {
 			throw new Exception("Failed to open file: $iniPath for initialization!");
@@ -17,17 +17,36 @@ class Deploy {
 		
 		return array_merge($optInner, $optOuter);
 	}
-	
-	public function run( $config = 'deploy.ini', $host = 'client' ) {
-	
-		$opt = $this->initByIni($config);
+
+	public function deployClient( $ini ) {
+		$base = new DeployClient;					// create the basic client class
 		
-		require_once($opt[$host]['script']);
-		$deployClass = new $opt[$host]['class'];
-		$deployClass->setProjectPath($opt[$host]['path']);
-		$deployClass->incZip = false;
+		$base->createWorkingDirectory();			// create working directory
+		$opt = $this->getOptions($ini);				// read options
 		
-		$deployClass->deploy();
+		require_once($opt['client']['script']);		// include deploying script
+		$deployer = new $opt['client']['class'];	// create the deploying class
+		$deployer->init($this, $opt);				// initialize deploying class
+		
+		$deployer->deploy();						// deploy
+		
+		$base->zipFiles();							// zip the created files
 		
 	}
+	
+	public function deployServer( $zip ) {
+		$base = new DeployServer;					// create the basic server class
+		
+		$wd = $base->createWorkingDirectory();		// create working directory
+		$base->unzipFiles($zip);					// unzip the deploying files
+		$opt = $this->getOptions($wd.'deploy.ini');	// read options
+		
+		require_once($opt['server']['script']);		// include deploying script
+		$deployer = new $opt['server']['class'];	// create the deploying class
+		$deployer->init($this, $opt);				// initialize deploying class
+		
+		$deployer->deploy();						// deploy
+		
+	}
+	
 }
