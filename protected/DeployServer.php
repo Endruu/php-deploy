@@ -37,7 +37,7 @@ class DeployServer extends DeployBase {
 		$this->addDir( $dir, $prefix );
 	}
 	
-	private function unzipFiles( $name = 'deploy.zip' ) {
+	public function unzipFiles( $name = 'deploy.zip' ) {
 		$zip = new ZipArchive;
 		
 		$ret = $zip->open($this->workDir.$name, ZipArchive::CHECKCONS);
@@ -162,7 +162,6 @@ class DeployServer extends DeployBase {
 	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
-		$this->createWorkingDirectory();
 		$this->getDeployFile('deploy.zip', 'protected/work');
 		
 		$this->unzipFiles();

@@ -37,7 +37,7 @@ class DeployClient extends DeployBase {
 	}
 	
 	
-	private function zipFiles( $name = 'deploy.zip') {
+	public function zipFiles( $name = 'deploy.zip') {
 		$zip = new ZipArchive;
 
 		$ret = $zip->open($this->workDir.$name, ZipArchive::CREATE);
@@ -94,7 +94,6 @@ class DeployClient extends DeployBase {
 	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
-		$this->createWorkingDirectory();
 		
 		$this->preDeployScript();
 		$this->writeDir($this->workDir);
