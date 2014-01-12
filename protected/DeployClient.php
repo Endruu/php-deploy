@@ -1,6 +1,7 @@
 <?php
 
 require_once 'DeployBase.php';
+require_once 'Ini.php';
 
 class DeployClient extends DeployBase {
 
@@ -103,11 +104,32 @@ class DeployClient extends DeployBase {
 		}
 	}
 	
+	private function prepareServerFiles() {
+		$file = $this->serverOpts['script'];
+		
+		if( $file ) {
+			$target = $this->workDir.basename($file);
+			if( !file_exists($file) ) {
+				throw new Exception("Missing server deployment file: $file!");
+			}
+			
+			if( !copy($file, $target) ) {
+				throw new Exception("Cant copy server deployment file: $file to working directory: ". $this->workDir);
+			}
+		} else {
+			$target = '';
+		}
+		
+		$this->serverOpts['script'] = $target;
+		Ini::writeIni($this->workDir.'deploy.ini', array('server' => $this->serverOpts));
+	}
+	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
 		$this->preDeployScript();
 		$this->writeDir($this->workDir);
 		$this->zipSrc();
+		$this->prepareServerFiles();
 		$this->postDeployScript();
 	}
 }
