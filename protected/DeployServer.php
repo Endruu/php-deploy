@@ -44,17 +44,9 @@ class DeployServer extends DeployBase {
 		if( $ret !== true ) {
 			throw new Exception("Can't open archive: $name! Zip error code: $ret");
 		}
-		
-		if( !$zip->extractTo($this->workDir, 'files.txt') ) {
-			throw new Exception("Failed to extract files.txt!");
-		}
-		
-		if( !$zip->extractTo($this->workDir, 'directories.txt') ) {
-			throw new Exception("Failed to extract directories.txt!");
-		}
-		
-		if( !$zip->extractTo($this->workDir, 'src.zip') ) {
-			throw new Exception("Failed to extract src.zip!");
+
+		if( !$zip->extractTo($this->workDir) ) {
+			throw new Exception("Failed to extract from $name!");
 		}
 		
 		if( !$zip->close() ) {
