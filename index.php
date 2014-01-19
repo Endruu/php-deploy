@@ -7,7 +7,7 @@
 
 <body>
 
-<?php require_once 'protected/server.php'; 
+<?php require_once 'protected/web/server.php'; 
 
 /*require_once 'protected/Deploy.php';
 
