@@ -50,6 +50,7 @@ function aUpload() {
 		if( $ext == 'zip' || $ext == 'dep' ) {
 			if( $_FILES['file']['size'] < $maxSize ) {
 				$name = saveFile($_FILES['file']['tmp_name'], $ext);
+				aDeploy($name);
 				//log!
 				echo $name;
 			} else {
@@ -63,7 +64,7 @@ function aUpload() {
 }
 
 function aDeploy($file) {
-	require_once '../core/Deploy.php';
+	require_once 'protected/core/Deploy.php';
 	$d = new Deploy;
 	$d->deployServer('protected/work/upload/'.$file);
 }

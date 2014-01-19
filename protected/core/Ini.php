@@ -14,6 +14,19 @@ class Ini {
         }
         file_put_contents($filename, $string);
     }
+	
+	public static function mergeIni($ini1, $ini2) {
+		$keys = array_merge(array_keys($ini1), array_keys($ini2));
+		$marged = array();
+		
+		foreach( $keys as $k ) {
+			$v1 = array_key_exists($k, $ini1) ? $ini1[$k] : array();
+			$v2 = array_key_exists($k, $ini2) ? $ini2[$k] : array();
+			$merged[$k] = array_merge($v1, $v2);
+		}
+		
+		return $merged;
+	}
 
     private static function stringify($ini, $prefix) {
         $string = '';

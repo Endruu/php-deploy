@@ -144,9 +144,7 @@ class DeployServer extends DeployBase {
 	
 	public function deploy() {
 		$this->projectPath ? $this->readDir($this->projectPath) : $this->readDir('.');
-		$this->getDeployFile('deploy.zip', 'protected/work');
 		
-		$this->unzipFiles();
 		$this->diffDir();
 		$this->preDeployScript();
 		$this->writeDiff();

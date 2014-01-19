@@ -17,7 +17,7 @@ class Deploy {
 			throw new Exception("Failed to open file: protected/deploy.ini for initialization!");
 		}
 		
-		return array_merge($optInner, $optOuter);
+		return Ini::mergeIni($optInner, $optOuter);
 	}
 
 	public function deployClient( $ini, $workDir = null ) {
@@ -25,6 +25,8 @@ class Deploy {
 		
 		$wd = $base->setWorkPath($workDir);			// create working directory
 		$opt = $this->getOptions($ini);				// read options
+		
+		set_time_limit($opt['client']['timeout']);
 		
 		if( $opt['client']['script'] ) {
 			require_once($opt['client']['script']);	// include deploying script
@@ -41,9 +43,11 @@ class Deploy {
 	public function deployServer( $zip, $workDir = null ) {
 		$base = new DeployServer;					// create the basic server class
 		
-		$wd = $base->setWorkPath($workDir, false);	// create working directory
+		$wd = $base->setWorkPath($workDir);			// create working directory
 		$base->unzipFiles($zip);					// unzip the deploying files
 		$opt = $this->getOptions($wd.'deploy.ini');	// read options
+		
+		set_time_limit($opt['server']['timeout']);
 		
 		if( $opt['server']['script'] ) {
 			require_once($opt['server']['script']);	// include deploying script
