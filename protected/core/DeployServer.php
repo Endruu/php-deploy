@@ -37,10 +37,10 @@ class DeployServer extends DeployBase {
 		$this->addDir( $dir, $prefix );
 	}
 	
-	public function unzipFiles( $name = 'deploy.zip' ) {
+	public function unzipFiles( $name ) {
 		$zip = new ZipArchive;
 		
-		$ret = $zip->open($this->workDir.$name, ZipArchive::CHECKCONS);
+		$ret = $zip->open($name, ZipArchive::CHECKCONS);
 		if( $ret !== true ) {
 			throw new Exception("Can't open archive: $name! Zip error code: $ret");
 		}
@@ -119,16 +119,6 @@ class DeployServer extends DeployBase {
 				if( !mkdir($this->projectPath.'/'.$d, 0777, true) ) {
 					throw new Exception("Can't create directory: $d");
 				}
-			}
-		}
-	}
-	
-	private function getDeployFile( $file = 'deploy.zip', $from = null ) {
-		if( $from === null ) {
-			// upload
-		} else {
-			if( !copy($from.'/'.$file, $this->workDir.$file) ) {
-				throw new Exception("Can't copy deploy file from: $from to: " . $this->workDir . " (file: $file)");
 			}
 		}
 	}

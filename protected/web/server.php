@@ -40,12 +40,13 @@ function aUpload() {
 	$maxSize	= 25 * 1024 *1024;	//25MB
 
 	$error = '';
-	$arr = explode('.', $_FILES['file']['name']);
-	$ext = array_pop($arr);
 	
 	if( $_FILES['file']['error'] > 0 ) {
 		$error = "file:$error";
 	} else {
+		$arr = explode('.', $_FILES['file']['name']);
+		$ext = array_pop($arr);
+		
 		if( $ext == 'zip' || $ext == 'dep' ) {
 			if( $_FILES['file']['size'] < $maxSize ) {
 				$name = saveFile($_FILES['file']['tmp_name'], $ext);
@@ -61,7 +62,11 @@ function aUpload() {
 	echo "<br />$error";
 }
 
-function aDeploy() {}
+function aDeploy($file) {
+	require_once '../core/Deploy.php';
+	$d = new Deploy;
+	$d->deployServer('protected/work/upload/'.$file);
+}
 
 function aError() {}
 

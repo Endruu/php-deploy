@@ -12,7 +12,7 @@ class Deploy {
 		if( $optOuter === false ) {
 			throw new Exception("Failed to open file: $iniPath for initialization!");
 		}
-		$optInner = Ini::readIni('protected/deploy.ini');
+		$optInner = Ini::readIni('protected/core/deploy.ini');
 		if( $optInner === false ) {
 			throw new Exception("Failed to open file: protected/deploy.ini for initialization!");
 		}
